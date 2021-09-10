@@ -1,0 +1,11 @@
+{
+    "name": "find_the_sun",
+    "devDependencies": {
+        "@types/node": "^10.0.0"
+    },
+    "dependencies": {
+        "@pulumi/digitalocean": "^4.6.1",
+        "@pulumi/kubernetes": "^3.7.0",
+        "@pulumi/pulumi": "^3.0.0"
+    }
+}

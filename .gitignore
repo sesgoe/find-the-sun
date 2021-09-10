@@ -1,0 +1,6 @@
+/bin/
+/node_modules/
+/venv/
+/__pycache__/
+/pulumi/Pulumi.*.yaml
+.envrc
