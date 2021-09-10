@@ -4,6 +4,7 @@ import os
 import math
 from dataclasses import dataclass
 from typing import Optional
+from flask_cors import CORS
 
 
 @dataclass
@@ -70,6 +71,7 @@ def get_closest_sunny_city(cities: "list[City]") -> Optional[City]:
     # I find the `lambda <stuff>` syntax to be weird...who wants to type out `lambda` every time?
     cities.sort(key=lambda x: x.distance)
     for c in cities:
+        print(c)
         if(c.weather.main == "Clear"):  # not a whole lot of API docs on the possible values for this -- from my basic testing, this gets the job done
             return c
     return None
@@ -78,13 +80,14 @@ def get_closest_sunny_city(cities: "list[City]") -> Optional[City]:
 def get_closest_sunny_city_for_location(loc: Location):
     count = 50  # pull max amount of cities to hopefully hit a positive result
     response = requests.get(
-        f"https://api.openweathermap.org/data/2.5/find?lat={loc.lat}&lon={loc.lon}&count={count}&appid={WEATHER_API_KEY}&units=imperial")
+        f"https://api.openweathermap.org/data/2.5/find?lat={loc.lat}&lon={loc.lon}&cnt={count}&appid={WEATHER_API_KEY}&units=imperial")
     cities: list[City] = build_cities_list(
         response.json()['list'], loc)
     return get_closest_sunny_city(cities)
 
 
 app = Flask(__name__)
+cors = CORS(app)
 
 
 # want this to be a simple POST with {lat: number, lon: number}
@@ -92,9 +95,13 @@ app = Flask(__name__)
 def closest_sunny_city():
 
     # probably an idiomatic way to do this that gracefully handles parsing errors
-    closestCity = get_closest_sunny_city_for_location(Location(**request.json))
+    try:
+        closestCity = get_closest_sunny_city_for_location(
+            Location(**request.json))
+    except:
+        return {'result': 'failure', 'message': 'Unable to parse input.'}
 
     if closestCity is not None:
         return {'result': 'success', 'data': closestCity}
     else:
-        return {'result': 'failure'}
+        return {'result': 'failure', 'message': 'Unable to find a close city with sunny weather.'}
